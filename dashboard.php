@@ -12,10 +12,28 @@ if (isset($_GET['delete'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_id'])) {
     $edit_id   = (int)   $_POST['edit_id'];
     $full_name = trim(mysqli_real_escape_string($conn, $_POST['full_name'] ?? ''));
+    $course    = trim(mysqli_real_escape_string($conn, $_POST['course'] ?? ''));
 
+    $updates = [];
+    
     if ($full_name !== '') {
-        mysqli_query($conn, "UPDATE users SET full_name = '$full_name' WHERE id = $edit_id");
+        $updates[] = "full_name = '$full_name'";
     }
+    if ($course !== '') {
+        $updates[] = "course = '$course'";
+    }
+
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $image_name = time() . '_' . basename($_FILES['image']['name']);
+        move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/' . $image_name);
+        $updates[] = "image = '$image_name'";
+    }
+
+    if (!empty($updates)) {
+        $set_clause = implode(', ', $updates);
+        mysqli_query($conn, "UPDATE users SET $set_clause WHERE id = $edit_id");
+    }
+
     header('Location: dashboard.php?updated=1');
     exit;
 }
@@ -62,7 +80,7 @@ if (isset($_GET['edit'])) {
     <?php elseif (isset($_GET['updated'])): ?>
         <div class="alert alert-success">
             <span class="alert-icon">&#10003;</span>
-            <div>Student name updated successfully.</div>
+            <div>Student record updated successfully.</div>
         </div>
     <?php endif; ?>
 
@@ -84,7 +102,9 @@ if (isset($_GET['edit'])) {
                     <th>#</th>
                     <th>Date Registered</th>
                     <th>ID</th>
+                    <th>Image</th>
                     <th>Full Name</th>
+                    <th>Course</th>
                     <th>Student ID</th>
                     <th>RFID Number</th>
                     <th>Actions</th>
@@ -93,7 +113,7 @@ if (isset($_GET['edit'])) {
             <tbody>
                 <?php if (empty($users)): ?>
                     <tr>
-                        <td colspan="7">
+                        <td colspan="9">
                             <div class="empty-state">
                                 <span>&#9670;</span>
                                 No students registered yet. <a href="index.php" style="color:var(--pink);">Register one now.</a>
@@ -106,7 +126,15 @@ if (isset($_GET['edit'])) {
                             <td style="color:var(--text-muted);"><?= $i + 1 ?></td>
                             <td><?= date('M d, Y  H:i', strtotime($user['created_at'])) ?></td>
                             <td><span class="badge-id"><?= htmlspecialchars($user['id']) ?></span></td>
+                            <td>
+                                <?php if (!empty($user['image'])): ?>
+                                    <img src="uploads/<?= htmlspecialchars($user['image']) ?>" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border);">
+                                <?php else: ?>
+                                    <span style="color:var(--text-muted); font-size: 0.75rem;">None</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="td-name"><?= htmlspecialchars($user['full_name']) ?></td>
+                            <td><?= htmlspecialchars($user['course'] ?? '') ?></td>
                             <td><?= htmlspecialchars($user['student_id']) ?></td>
                             <td class="td-rfid"><?= htmlspecialchars($user['rfid_number']) ?></td>
                             <td class="td-actions">
@@ -130,12 +158,13 @@ if (isset($_GET['edit'])) {
 <div class="modal-overlay" id="editModal">
     <div class="modal">
         <div class="modal-header">
-            <h2>Edit <span style="color:var(--pink);">Student Name</span></h2>
+            <h2>Edit <span style="color:var(--pink);">Student Data</span></h2>
             <button class="modal-close" onclick="closeModal()">&#10005;</button>
         </div>
 
-        <form method="POST" action="dashboard.php">
+        <form method="POST" action="dashboard.php" enctype="multipart/form-data">
             <input type="hidden" name="edit_id" value="<?= $edit_user['id'] ?>">
+            
             <div class="form-group">
                 <label class="form-label" for="edit_full_name">Full Name</label>
                 <input
@@ -144,14 +173,38 @@ if (isset($_GET['edit'])) {
                     name="full_name"
                     class="form-input"
                     value="<?= htmlspecialchars($edit_user['full_name']) ?>"
-                    required
                     autofocus
                 >
             </div>
-            <div style="margin-top:0.6rem; color:var(--text-muted); font-size:0.78rem; font-family:'Space Mono',monospace;">
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label" for="edit_course">Course</label>
+                <input
+                    type="text"
+                    id="edit_course"
+                    name="course"
+                    class="form-input"
+                    placeholder="Leave blank to keep current"
+                    value="<?= htmlspecialchars($edit_user['course'] ?? '') ?>"
+                >
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label" for="edit_image">Update Image</label>
+                <input
+                    type="file"
+                    id="edit_image"
+                    name="image"
+                    class="form-input"
+                    accept="image/*"
+                >
+            </div>
+
+            <div style="margin-top:0.8rem; color:var(--text-muted); font-size:0.78rem; font-family:'Space Mono',monospace;">
                 Student ID: <?= htmlspecialchars($edit_user['student_id']) ?> &nbsp;|&nbsp;
                 RFID: <?= htmlspecialchars($edit_user['rfid_number']) ?>
             </div>
+            
             <div class="modal-actions">
                 <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary">Save Changes</button>

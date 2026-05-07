@@ -10,8 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name   = trim(mysqli_real_escape_string($conn, $_POST['full_name']   ?? ''));
     $student_id  = trim(mysqli_real_escape_string($conn, $_POST['student_id']  ?? ''));
     $rfid_number = trim(mysqli_real_escape_string($conn, $_POST['rfid_number'] ?? ''));
+    $course      = trim(mysqli_real_escape_string($conn, $_POST['course']      ?? ''));
 
-    if ($full_name === '' || $student_id === '' || $rfid_number === '') {
+    $image_name = '';
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $image_name = time() . '_' . basename($_FILES['image']['name']);
+        move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/' . $image_name);
+    }
+
+    if ($full_name === '' || $student_id === '' || $rfid_number === '' || $course === '') {
         $error = 'All fields are required. Please fill in every field.';
     } else {
         $check = mysqli_query($conn, "SELECT id FROM users WHERE rfid_number = '$rfid_number' LIMIT 1");
@@ -19,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (mysqli_num_rows($check) > 0) {
             $error = "RFID <strong>{$rfid_number}</strong> is already registered to another student. Each card must be unique.";
         } else {
-            $sql = "INSERT INTO users (full_name, student_id, rfid_number)
-                    VALUES ('$full_name', '$student_id', '$rfid_number')";
+            $sql = "INSERT INTO users (full_name, student_id, rfid_number, course, image)
+                    VALUES ('$full_name', '$student_id', '$rfid_number', '$course', '$image_name')";
 
             if (mysqli_query($conn, $sql)) {
                 header('Location: dashboard.php?registered=1');
@@ -58,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <div class="card" style="max-width: 520px;">
-        <form method="POST" action="index.php" autocomplete="off">
+        <form method="POST" action="index.php" autocomplete="off" enctype="multipart/form-data">
             <div class="form-grid">
 
                 <div class="form-group">
@@ -89,6 +96,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label" for="course">Course</label>
+                    <input
+                        type="text"
+                        id="course"
+                        name="course"
+                        class="form-input"
+                        placeholder="e.g. BSIT"
+                        value="<?= htmlspecialchars($_POST['course'] ?? '') ?>"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
                     <label class="form-label" for="rfid_number">RFID Number</label>
                     <input
                         type="text"
@@ -98,6 +118,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         placeholder="type RFID code"
                         value="<?= htmlspecialchars($_POST['rfid_number'] ?? '') ?>"
                         required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="image">Add an Image</label>
+                    <input
+                        type="file"
+                        id="image"
+                        name="image"
+                        class="form-input"
+                        accept="image/*"
                     >
                 </div>
 

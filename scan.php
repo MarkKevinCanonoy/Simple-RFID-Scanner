@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $scanned_rfid = $rfid_input;
 
     if ($rfid_input !== '') {
-        $res  = mysqli_query($conn, "SELECT full_name, student_id FROM users WHERE rfid_number = '$rfid_input' LIMIT 1");
+        $res  = mysqli_query($conn, "SELECT full_name, student_id, course, image FROM users WHERE rfid_number = '$rfid_input' LIMIT 1");
         if (mysqli_num_rows($res) > 0) {
             $found_user = mysqli_fetch_assoc($res);
         } else {
@@ -51,8 +51,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="scan-result-box <?= $found_user ? 'success' : ($not_found ? 'error' : '') ?>" id="resultBox">
             <?php if ($found_user): ?>
-                <div style="font-size:0.75rem;font-family:'Space Mono',monospace;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:0.3rem;">STUDENT IDENTIFIED</div>
-                <div class="result-name"><?= htmlspecialchars($found_user['full_name']) ?></div>
+                <div style="font-size:0.75rem;font-family:'Space Mono',monospace;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:0.8rem;">STUDENT IDENTIFIED</div>
+                
+                <?php if (!empty($found_user['image'])): ?>
+                    <img src="uploads/<?= htmlspecialchars($found_user['image']) ?>" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--pink); margin-bottom: 0.8rem;">
+                <?php else: ?>
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-elevated); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; color: var(--text-muted); font-size: 0.8rem;">No Img</div>
+                <?php endif; ?>
+
+                <div class="result-name" style="margin-bottom: 0.2rem;"><?= htmlspecialchars($found_user['full_name']) ?></div>
+                <div style="color:var(--text-primary); font-weight:600; margin-bottom: 0.2rem;"><?= htmlspecialchars($found_user['course'] ?? '') ?></div>
                 <div class="result-student-id"><?= htmlspecialchars($found_user['student_id']) ?></div>
             <?php elseif ($not_found): ?>
                 <div style="font-size:1.5rem;margin-bottom:0.4rem;">&#9888;</div>

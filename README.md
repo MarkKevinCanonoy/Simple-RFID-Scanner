@@ -1,22 +1,20 @@
-# RFID Student Registration & Scanning System
-### XAMPP + PHP (Procedural) + MySQL
+# Simple RFID Student Registration & Scanning
 
 ---
 
 ## File Structure
 
 ```
-rfid_system/           ← Place this entire folder in htdocs/
+rfid_system/           
 │
-├── db.php             ← Database connection (edit credentials here)
-├── navbar.php         ← Shared navigation partial
-├── style.css          ← Global dark + hot-pink stylesheet
+├── db.php            
+├── navbar.php        
+├── style.css          
 │
-├── index.php          ← Register new student
-├── dashboard.php      ← View / Edit / Delete all students
-├── scan.php           ← RFID scan interface
+├── index.php        
+├── dashboard.php     
+├── scan.php         
 │
-└── setup.sql          ← Run this once to create DB + table
 ```
 
 ---

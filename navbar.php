@@ -1,7 +1,4 @@
 <?php
-// ============================================
-//  navbar.php — Shared Navigation Partial
-// ============================================
 
 $current = basename($_SERVER['PHP_SELF']);
 ?>

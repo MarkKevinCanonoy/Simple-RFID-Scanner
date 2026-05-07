@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 :root {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --bg-base:      #0e0e0e;
     --bg-surface:   #181818;
     --bg-elevated:  #232323;
@@ -23,6 +23,24 @@
     --radius-lg: 14px;
     --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.form-input, 
+.badge-id, 
+.td-rfid, 
+.scan-input, 
+.result-student-id, 
+.page-header p {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.page-header h1, 
+.nav-brand, 
+.btn, 
+.td-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700; 
+}
+
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
